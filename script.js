@@ -1,13 +1,9 @@
 /* ---- PAGE LOADER ---- */
 (function () {
   const loader = document.getElementById('page-loader');
-  // Remove loader after 2s (bar animation takes 1.7s)
   window.addEventListener('load', () => {
-    setTimeout(() => {
-      loader.classList.add('done');
-    }, 1700);
+    setTimeout(() => { loader.classList.add('done'); }, 1700);
   });
-  // Failsafe: remove after 3s max
   setTimeout(() => { if (loader) loader.classList.add('done'); }, 3000);
 })();
 
@@ -20,7 +16,7 @@ const CERTS = [
     issuer: 'NPTEL',
     year: '2024',
     desc: 'Covered cloud service models (IaaS, PaaS, SaaS), virtualization, distributed systems, and deployment strategies on major cloud platforms.',
-    file: 'cert-nptel-cloud.pdf', // Replace with your actual cert file
+    file: 'cert-nptel-cloud.pdf',
     color: '#3b82f6'
   },
   {
@@ -53,115 +49,194 @@ const CERTS = [
 ];
 
 window.openCert = function(index) {
-  const cert = CERTS[index];
-  const overlay = document.getElementById('cert-modal-overlay');
-  const header  = document.getElementById('cert-modal-header');
-  const imgWrap = document.getElementById('cert-preview-card');
-  const dlBtn   = document.getElementById('cert-download-btn');
+  const cert   = CERTS[index];
+  const overlay = document.getElementById('cert-inline-overlay');
+  const tag    = document.getElementById('cert-inline-tag');
+  const title  = document.getElementById('cert-inline-title');
+  const dlBtn  = document.getElementById('cert-inline-dl');
+  const body   = document.getElementById('cert-inline-body');
 
-  // Header
-  header.innerHTML = `
-    <span class="cm-tag">${cert.issuer} · ${cert.year}</span>
-    <h2>${cert.name}</h2>
-  `;
+  // Set header
+  tag.textContent   = cert.issuer + ' · ' + cert.year;
+  tag.style.color   = cert.color;
+  title.textContent = cert.name;
+  dlBtn.href        = cert.file;
+  dlBtn.download    = cert.file;
 
-  // Certificate preview card (beautiful placeholder with cert details)
-  imgWrap.innerHTML = `
-    <div class="cert-preview-placeholder">
-      <span class="cert-big-icon">${cert.icon}</span>
-      <p class="cert-pl-name">${cert.name}</p>
-      <p class="cert-pl-issuer">${cert.issuer}</p>
-      <span class="cert-verified">✓ Certificate Verified</span>
-      <p style="margin-top:1rem;font-size:0.8rem;color:var(--text2);line-height:1.6;max-width:360px;margin-left:auto;margin-right:auto;">${cert.desc}</p>
-    </div>
-  `;
-  imgWrap.style.borderTop = '3px solid ' + cert.color;
+  // Reset body with loader
+  body.innerHTML = '<div class="cert-inline-loading"><div class="cert-spin"></div><p>Loading certificate...</p></div>';
 
-  // Download button
-  dlBtn.href = cert.file;
-  dlBtn.download = cert.file;
-
-  // If you have actual cert images, use this instead:
-  // imgWrap.innerHTML = `<img src="certs/${cert.file}" alt="${cert.name}" />`;
-
+  // Show overlay
   document.body.style.overflow = 'hidden';
   requestAnimationFrame(() => overlay.classList.add('open'));
+
+  // Load PDF after animation
+  setTimeout(() => {
+    body.innerHTML = '';
+    const isPDF = cert.file.toLowerCase().endsWith('.pdf');
+
+    if (isPDF) {
+      // Try embed first
+      const embed = document.createElement('embed');
+      embed.src    = cert.file;
+      embed.type   = 'application/pdf';
+      embed.style.cssText = 'width:100%;height:100%;border:none;border-radius:0 0 18px 18px;';
+      embed.onerror = () => loadFallback();
+      body.appendChild(embed);
+    } else {
+      const img = document.createElement('img');
+      img.src = cert.file;
+      img.alt = cert.name;
+      img.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:0 0 18px 18px;';
+      img.onerror = () => loadFallback();
+      body.appendChild(img);
+    }
+
+    function loadFallback() {
+      body.innerHTML =
+        '<div class="cert-fallback">' +
+          '<span class="cert-fall-icon">' + cert.icon + '</span>' +
+          '<p class="cert-fall-name">' + cert.name + '</p>' +
+          '<p class="cert-fall-issuer">' + cert.issuer + '</p>' +
+          '<span class="cert-verified">✓ Certificate Verified</span>' +
+          '<p class="cert-fall-desc">' + cert.desc + '</p>' +
+          '<p class="cert-fall-hint">Place <code>' + cert.file + '</code> in your portfolio folder to display the certificate here.</p>' +
+        '</div>';
+    }
+  }, 350);
 };
 
-window.closeCert = function() {
-  const overlay = document.getElementById('cert-modal-overlay');
+window.closeCertInline = function() {
+  const overlay = document.getElementById('cert-inline-overlay');
   overlay.classList.remove('open');
   document.body.style.overflow = '';
+  setTimeout(() => {
+    document.getElementById('cert-inline-body').innerHTML = '';
+  }, 400);
 };
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { window.closeCert(); window.closeBlog && window.closeBlog(); }
+  if (e.key === 'Escape') {
+    window.closeCertInline();
+    window.closeBlog && window.closeBlog();
+  }
 });
 
-/* ============================================
-   JATIN VOHRA PORTFOLIO — script.js
-   ============================================ */
 
-/* ---- PARTICLE CANVAS ---- */
+/* ---- NEURAL NETWORK BACKGROUND ---- */
 (function () {
   const canvas = document.getElementById('canvas-bg');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  let pts = [], animId;
+  let nodes = [], animId, t = 0;
+  const CONN_DIST = 160;
+  const PULSE_SPEED = 0.012;
 
-  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  // Pulse signals travelling along connections
+  const pulses = [];
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    init();
+  }
 
   function init() {
-    pts = [];
-    for (let i = 0; i < 65; i++) {
-      pts.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 1.3 + 0.25,
-        vx: (Math.random() - 0.5) * 0.22,
-        vy: (Math.random() - 0.5) * 0.22,
-        o: Math.random() * 0.4 + 0.08
+    nodes = [];
+    const count = Math.min(55, Math.floor(canvas.width * canvas.height / 22000));
+    for (let i = 0; i < count; i++) {
+      nodes.push({
+        x:  Math.random() * canvas.width,
+        y:  Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.18,
+        vy: (Math.random() - 0.5) * 0.18,
+        r:  Math.random() * 2 + 1.5,
+        pulse: Math.random() * Math.PI * 2,   // phase for glow pulse
+        layer: Math.floor(Math.random() * 3),  // 0=input 1=hidden 2=output
       });
     }
   }
 
   function draw() {
+    t += PULSE_SPEED;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const light = document.documentElement.getAttribute('data-theme') === 'light';
 
-    pts.forEach(p => {
-      p.x += p.vx; p.y += p.vy;
-      if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = light
-        ? `rgba(124,92,252,${p.o * 0.5})`
-        : `rgba(167,139,250,${p.o})`;
-      ctx.fill();
+    // Color scheme
+    const nodeColor  = light ? [100, 60, 220]  : [167, 139, 250];
+    const connColor  = light ? [100, 60, 220]  : [124, 92, 252];
+    const pulseColor = light ? [80,  200, 255] : [103, 232, 249];
+
+    // Move nodes
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > canvas.width)  n.vx *= -1;
+      if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+      n.pulse += 0.025;
     });
 
-    for (let i = 0; i < pts.length; i++) {
-      for (let j = i + 1; j < pts.length; j++) {
-        const d = Math.hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y);
-        if (d < 110) {
-          const a = light
-            ? 0.04 * (1 - d / 110)
-            : 0.12 * (1 - d / 110);
+    // Draw connections with animated signals
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist > CONN_DIST) continue;
+
+        const opacity = (1 - dist / CONN_DIST) * (light ? 0.12 : 0.18);
+
+        // Static connection line
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.strokeStyle = `rgba(${connColor.join(',')},${opacity})`;
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+
+        // Travelling pulse signal along connection
+        const phasedT = (t + i * 0.3 + j * 0.17) % (Math.PI * 2);
+        const progress = (Math.sin(phasedT) + 1) / 2;
+        const px = a.x + dx * progress;
+        const py = a.y + dy * progress;
+
+        if (opacity > 0.05) {
+          const grad = ctx.createRadialGradient(px, py, 0, px, py, 5);
+          grad.addColorStop(0, `rgba(${pulseColor.join(',')},${opacity * 3})`);
+          grad.addColorStop(1, `rgba(${pulseColor.join(',')},0)`);
           ctx.beginPath();
-          ctx.moveTo(pts[i].x, pts[i].y);
-          ctx.lineTo(pts[j].x, pts[j].y);
-          ctx.strokeStyle = `rgba(124,92,252,${a})`;
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
+          ctx.arc(px, py, 5, 0, Math.PI * 2);
+          ctx.fillStyle = grad;
+          ctx.fill();
         }
       }
     }
+
+    // Draw nodes (neurons)
+    nodes.forEach(n => {
+      const glow = 0.6 + 0.4 * Math.sin(n.pulse);
+      const baseAlpha = light ? 0.5 : 0.75;
+
+      // Outer glow ring
+      const outerGrad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 4);
+      outerGrad.addColorStop(0, `rgba(${nodeColor.join(',')},${glow * baseAlpha * 0.35})`);
+      outerGrad.addColorStop(1, `rgba(${nodeColor.join(',')},0)`);
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r * 4, 0, Math.PI * 2);
+      ctx.fillStyle = outerGrad;
+      ctx.fill();
+
+      // Core node
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${nodeColor.join(',')},${glow * baseAlpha})`;
+      ctx.fill();
+    });
+
     animId = requestAnimationFrame(draw);
   }
 
-  resize(); init(); draw();
-  window.addEventListener('resize', () => { cancelAnimationFrame(animId); resize(); init(); draw(); });
+  resize(); draw();
+  window.addEventListener('resize', () => { cancelAnimationFrame(animId); resize(); });
 })();
 
 
@@ -206,7 +281,7 @@ document.addEventListener('keydown', e => {
 })();
 
 
-/* ---- THEME TOGGLE ---- */
+/* ---- THEME TOGGLE — Advanced Morphing Animation ---- */
 (function () {
   const btn  = document.getElementById('theme-btn');
   const icon = document.getElementById('theme-icon');
@@ -217,22 +292,45 @@ document.addEventListener('keydown', e => {
   icon.textContent = stored === 'dark' ? '🌙' : '☀️';
 
   btn.addEventListener('click', () => {
-    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    const next   = isDark ? 'light' : 'dark';
 
-    // 1. Ripple effect on button
-    btn.classList.add('ripple');
-    setTimeout(() => btn.classList.remove('ripple'), 500);
+    // 1. Burst ripple from button center
+    const rect = btn.getBoundingClientRect();
+    const burst = document.createElement('div');
+    burst.className = 'theme-burst';
+    burst.style.left = rect.left + rect.width / 2 + 'px';
+    burst.style.top  = rect.top  + rect.height / 2 + 'px';
+    document.body.appendChild(burst);
+    setTimeout(() => burst.remove(), 800);
 
-    // 2. Spinning icon swap
-    icon.style.transition = 'transform 0.4s cubic-bezier(0.34,1.6,0.64,1), opacity 0.2s';
-    icon.style.transform  = 'rotate(360deg) scale(0)';
+    // 2. Particles exploding from button
+    for (let i = 0; i < 8; i++) {
+      const p = document.createElement('div');
+      p.className = 'theme-particle';
+      const angle  = (i / 8) * 360;
+      const dist   = 40 + Math.random() * 30;
+      const dx = Math.cos(angle * Math.PI / 180) * dist;
+      const dy = Math.sin(angle * Math.PI / 180) * dist;
+      p.style.cssText = `left:${rect.left + rect.width/2}px;top:${rect.top + rect.height/2}px;--dx:${dx}px;--dy:${dy}px;background:${isDark ? '#f59e0b' : '#a78bfa'}`;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 700);
+    }
+
+    // 3. Full page sweep transition
+    const sweep = document.createElement('div');
+    sweep.className = 'theme-sweep';
+    sweep.style.background = isDark
+      ? 'linear-gradient(135deg, #faf8ff, #f2eeff)'
+      : 'linear-gradient(135deg, #0f0f1a, #13131f)';
+    document.body.appendChild(sweep);
+    setTimeout(() => sweep.remove(), 700);
+
+    // 4. Icon morph
+    icon.style.transition = 'transform 0.5s cubic-bezier(0.34,1.8,0.64,1), opacity 0.15s, filter 0.3s';
+    icon.style.transform  = 'rotate(720deg) scale(0)';
     icon.style.opacity    = '0';
-
-    // 3. Full-page flash
-    const flash = document.createElement('div');
-    flash.className = 'theme-flash';
-    document.body.appendChild(flash);
-    setTimeout(() => flash.remove(), 500);
+    icon.style.filter     = 'blur(4px)';
 
     setTimeout(() => {
       html.setAttribute('data-theme', next);
@@ -240,7 +338,8 @@ document.addEventListener('keydown', e => {
       localStorage.setItem('jv-theme', next);
       icon.style.transform = 'rotate(0deg) scale(1)';
       icon.style.opacity   = '1';
-    }, 200);
+      icon.style.filter    = 'blur(0px)';
+    }, 220);
   });
 })();
 
@@ -267,7 +366,7 @@ document.addEventListener('keydown', e => {
 
 /* ---- GITHUB STATS ---- */
 (function () {
-  const USERNAME = 'jatinvohra11'; // ← Change to your real GitHub username
+  const USERNAME = 'jatinvohra11';
 
   async function load() {
     try {
@@ -308,69 +407,65 @@ document.addEventListener('keydown', e => {
 
 /* ---- FLOATING CHATBOT ---- */
 (function () {
-  const fab     = document.getElementById('chat-fab');
-  const popup   = document.getElementById('chat-popup');
+  const fab      = document.getElementById('chat-fab');
+  const popup    = document.getElementById('chat-popup');
   const closeBtn = document.getElementById('chat-popup-close');
-  const box     = document.getElementById('chat-messages');
-  const inp     = document.getElementById('chat-input');
-  const sug     = document.getElementById('chat-suggestions');
+  const box      = document.getElementById('chat-messages');
+  const inp      = document.getElementById('chat-input');
+  const sug      = document.getElementById('chat-suggestions');
 
-  /* --- Toggle open/close --- */
-  function openChat() {
-    popup.classList.add('open');
-    fab.classList.add('open');
-    inp.focus();
-  }
-  function closeChat() {
-    popup.classList.remove('open');
-    fab.classList.remove('open');
-  }
+  function openChat() { popup.classList.add('open'); fab.classList.add('open'); inp.focus(); }
+  function closeChat() { popup.classList.remove('open'); fab.classList.remove('open'); }
 
-  fab.addEventListener('click', () => {
-    popup.classList.contains('open') ? closeChat() : openChat();
-  });
+  fab.addEventListener('click', () => { popup.classList.contains('open') ? closeChat() : openChat(); });
   closeBtn.addEventListener('click', closeChat);
-
-  // Close on outside click
-  document.addEventListener('click', e => {
-    if (!popup.contains(e.target) && !fab.contains(e.target)) closeChat();
-  });
-
-  // Close on Escape
+  document.addEventListener('click', e => { if (!popup.contains(e.target) && !fab.contains(e.target)) closeChat(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChat(); });
 
-  /* --- Knowledge base --- */
   const KB = {
-    'who is jatin': 'Jatin Vohra is a CS Engineering student at LPU. He\'s passionate about AI systems, backend dev, and intelligent applications. 🎓',
-    projects: 'Three major projects:\n\n1️⃣ Event Reminder System — Flask + CRUD\n2️⃣ Startup Advisor Chatbot — Gemini API with voice input\n3️⃣ RAG-Based AI Assistant — FAISS + Ollama (Phi-3) for NCERT content',
-    technologies: 'Python, Java, Flask, FAISS, Gemini API, Ollama, SQL, HTML/CSS/JS. Also learning Kotlin for Android. 💻',
-    hire: 'Yes! Looking for internships & full-time roles in AI/ML and backend dev. Use the contact form or LinkedIn! 🚀',
-    skills: 'Java · Python · Kotlin · C++ · Flask · JavaScript · FAISS · Gemini API · MySQL · Git\nCerts: Cloud Computing, GenAI (Infosys), DSA with Java ⚡',
-    education: 'B.Tech CSE at LPU. 80% in Class X, 70% in Class XII. 🎓',
-    experience: 'Online Exam Proctor at LPU since Dec 2025. Volunteers with Anmol Social & Welfare Society. 🌱',
-    youtube: 'Check the GitHub and LinkedIn links on this page for more! 🔗',
-    contact: 'Use the contact form, email, LinkedIn, or GitHub. Links are in the Contact section! 📬',
-    default: 'I know Jatin pretty well 😄\nAsk about his projects, skills, experience, or how to hire him!'
+    intro:    "Hey! 👋 I'm Jatin's AI assistant.\nAsk me anything — his age, projects, skills, hobbies, background, or how to hire him!",
+    who:      "Jatin Vohra is a 21-year-old AI Developer & CSE student at Lovely Professional University, Punjab.\n\nHe builds intelligent systems — RAG pipelines, AI chatbots, full-stack web apps. Currently open to internships & full-time AI/ML roles! 🚀",
+    age:      "Jatin is 21 years old! 🎂\n\nAt 21, he's already shipped 3 complete AI projects:\n1️⃣ Event Reminder System\n2️⃣ Gemini-powered Startup Chatbot\n3️⃣ RAG-based AI Assistant with FAISS + Ollama\n\nPretty impressive for 21, right? 😄",
+    about:    "Quick snapshot of Jatin 👇\n\n🧑‍💻 Name: Jatin Vohra\n📅 Age: 21 years\n🎓 B.Tech CSE — LPU (2023–2027)\n📍 Punjab, India\n💼 AI Developer | Full Stack Dev\n\nDriven by one belief: AI is the most transformative tool of our time — and he wants to be one of the builders, not just a user.",
+    projects: "Jatin has shipped 3 real AI projects 🚀\n\n1️⃣ Event Reminder System\n   Flask web app with auth, CRUD & notifications\n\n2️⃣ Startup Advisor Chatbot\n   Gemini API + voice input + dark mode + chat history\n\n3️⃣ RAG-Based AI Assistant (EDUQX)\n   FAISS vector search + Ollama Phi-3 + hallucination guardrails\n   For NCERT Class 9-12 content",
+    technologies: "Jatin's tech stack 💻\n\n🐍 Languages: Python, Java, Kotlin, C++, SQL\n⚡ Frameworks: Flask, HTML, CSS, JavaScript\n🧠 AI/ML: FAISS, Gemini API, Ollama, RAG, sentence-transformers\n🛢 DBs: MySQL, FAISS Vector DB\n🛠 Tools: Git, GitHub, VS Code, Power BI\n📱 Mobile: Kotlin + Jetpack Compose\n\nLearning: FastAPI, Docker, prompt engineering",
+    skills:   "Core skills 💡\n\nTechnical:\n• RAG systems & LLM integration\n• Vector databases (FAISS)\n• Python, Flask, REST APIs\n• Full-stack web dev\n• Android (Kotlin)\n\nSoft Skills:\n• Critical Thinking & Problem Solving\n• Quick Learner — adapts fast\n• Strong communicator",
+    education: "Academic Background 🎓\n\n🏛 B.Tech CSE — LPU (2023–2027)\n   Lovely Professional University, Punjab\n\n📚 Class XII — 70%\n   Grand Columbus International School\n\n📚 Class X — 80%\n   St. Peter's Convent School",
+    experience: "Experience 💼\n\n🖥 Online Exam Proctor — LPU (Dec 2025–Present)\n   AI-assisted proctoring, academic integrity, student support\n\n🌱 Volunteer — Anmol Social & Welfare Society\n   Food & clothing drives, tree plantation, community events",
+    certifications: "Certifications 🏆\n\n☁️ Cloud Computing — NPTEL\n🤖 Build Generative AI Apps — Infosys Springboard\n📊 Job Ready Data Science — CodewithHarry\n⚙️ DSA with Java — Apna College",
+    hobbies:  "Jatin beyond the code 🎯\n\n🎮 Competitive programming & LeetCode\n🎵 Lo-fi music while coding late night\n📹 YouTube: '1 Minute Coding Gyaan' (quick dev tips!)\n🌱 Volunteering with Anmol Social & Welfare Society\n🤖 Experimenting with new LLMs & AI papers\n📱 Building Android apps as side projects\n☕ Coffee + Code = Jatin's formula 😄",
+    location: "📍 Punjab, India\n\nJatin studies at LPU in Phagwara, Punjab.\nOpen to remote roles globally & relocation for the right opportunity! 🌍",
+    contact:  "Reach Jatin 📬\n\n📧 jatinvohra792@gmail.com\n💼 linkedin.com/in/jatinvohra11\n🐙 github.com/jatinvohra11\n\nOr use the Contact form on this page — he responds within 24 hours! ⚡",
+    hire:     "Yes! Jatin is actively looking 🚀\n\nLooking for:\n• AI/ML Engineering roles (intern or full-time)\n• Backend dev (Python/Flask/Java)\n• Full-stack with AI integration\n• Remote & on-site both OK\n\nWhy hire him?\n✅ 3 real AI projects shipped\n✅ Hands-on: RAG, LLMs, vector DBs\n✅ 21 y/o with strong fundamentals\n✅ Fast learner who ships\n\nContact via form or LinkedIn! 💼",
+    fun:      "Fun facts about Jatin 🎉\n\n🦉 Night owl — most productive after 10 PM\n☕ Runs on coffee while building AI systems\n🤖 Genuinely believes AI will change everything\n📹 YouTube channel with coding tips (no face cam!)\n🌱 Volunteers on weekends\n🎯 Dream: Ship an AI product with 1000+ real users\n💬 Motto: Build things, break things, learn things!",
+    default:  "Hmm, didn't catch that! 🤔\n\nTry asking:\n• 'Who is Jatin?' or 'How old is he?'\n• 'What projects has he built?'\n• 'What's his tech stack?'\n• 'What are his hobbies?'\n• 'How to contact him?'\n• 'Why should I hire him?'\n\nJust ask naturally — I understand! 😊"
   };
 
   function respond(msg) {
-    const m = msg.toLowerCase();
-    if (m.includes('who') && m.includes('jatin')) return KB['who is jatin'];
-    if (m.includes('project') || m.includes('built')) return KB.projects;
-    if (m.includes('tech') || m.includes('stack') || m.includes('language') || m.includes('use')) return KB.technologies;
-    if (m.includes('hire') || m.includes('available') || m.includes('job') || m.includes('intern')) return KB.hire;
-    if (m.includes('skill')) return KB.skills;
-    if (m.includes('edu') || m.includes('degree') || m.includes('lpu')) return KB.education;
-    if (m.includes('experience') || m.includes('work')) return KB.experience;
-    if (m.includes('contact') || m.includes('reach') || m.includes('email')) return KB.contact;
+    const m = msg.toLowerCase().trim();
+
+    if (/^(hi|hello|hey|hii|helo|namaste|yo|sup|howdy)/.test(m)) return KB.intro;
+    if (m.includes('fun') || m.includes('fact') || m.includes('interest') || m.includes('cool') || m.includes('surprise')) return KB.fun;
+    if (m.includes('age') || m.includes(' old') || m.includes('born') || m.includes('kitne') || m.includes('saal') || m === '21' || m.includes('how old') || m.includes('umar')) return KB.age;
+    if (m.includes('where') || m.includes('location') || m.includes('city') || m.includes('india') || m.includes('punjab') || m.includes('from where') || m.includes('belong')) return KB.location;
+    if (m.includes('who is') || m.includes('who are') || m.includes('introduce') || m.includes('about jatin') || m.includes('tell me')) return KB.who;
+    if (m.includes('about') || m.includes('background') || m.includes('overview') || m.includes('summary') || m.includes('describe')) return KB.about;
+    if (m.includes('project') || m.includes('built') || m.includes('build') || m.includes('made') || m.includes('app') || m.includes('develop') || m.includes('rag') || m.includes('chatbot')) return KB.projects;
+    if (m.includes('tech') || m.includes('stack') || m.includes('language') || m.includes('framework') || m.includes('python') || m.includes('java') || m.includes('flask') || m.includes('tool') || m.includes('use karta')) return KB.technologies;
+    if (m.includes('hire') || m.includes('job') || m.includes('intern') || m.includes('recruit') || m.includes('work with') || m.includes('opportunity') || m.includes('available') || m.includes('employ')) return KB.hire;
+    if (m.includes('cert') || m.includes('course') || m.includes('nptel') || m.includes('infosys') || m.includes('apna') || m.includes('award') || m.includes('achiev')) return KB.certifications;
+    if (m.includes('skill') || m.includes('know') || m.includes('expert') || m.includes('good at') || m.includes('capable') || m.includes('abilit')) return KB.skills;
+    if (m.includes('edu') || m.includes('degree') || m.includes('lpu') || m.includes('university') || m.includes('college') || m.includes('school') || m.includes('study') || m.includes('class') || m.includes('marks') || m.includes('cgpa')) return KB.education;
+    if (m.includes('experience') || m.includes('proctor') || m.includes('volunteer') || m.includes('anmol') || m.includes('work') || m.includes('internship done')) return KB.experience;
+    if (m.includes('hobby') || m.includes('hobbies') || m.includes('free time') || m.includes('like to') || m.includes('enjoy') || m.includes('passion') || m.includes('youtube') || m.includes('music') || m.includes('game') || m.includes('coding gyaan') || m.includes('spare')) return KB.hobbies;
+    if (m.includes('contact') || m.includes('reach') || m.includes('email') || m.includes('linkedin') || m.includes('github') || m.includes('message') || m.includes('connect') || m.includes('dm')) return KB.contact;
+
     return KB.default;
   }
 
   function scrollBottom() {
-    // Force scroll to bottom — works even in flex containers
     requestAnimationFrame(() => {
       box.scrollTop = box.scrollHeight;
-      // Double-tap for safety after render
       setTimeout(() => { box.scrollTop = box.scrollHeight; }, 60);
     });
   }
@@ -411,19 +506,41 @@ document.addEventListener('keydown', e => {
 })();
 
 
-/* ---- CONTACT FORM ---- */
-window.submitForm = function (e) {
+/* ---- CONTACT FORM — Formspree → jatinvohra792@gmail.com ---- */
+window.submitForm = async function (e) {
   e.preventDefault();
-  const btn = document.getElementById('form-submit');
-  btn.textContent = '✓ Message Sent!';
-  btn.classList.add('success');
+  const form    = e.target;
+  const btn     = document.getElementById('form-submit');
+  const success = document.getElementById('form-success');
+
+  btn.textContent = 'Sending...';
   btn.disabled = true;
-  setTimeout(() => {
-    btn.textContent = 'Send Message ✦';
-    btn.classList.remove('success');
-    btn.disabled = false;
-    e.target.reset();
-  }, 3500);
+
+  try {
+    const res = await fetch('https://formspree.io/f/mreyjggv', {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (res.ok) {
+      form.style.display = 'none';
+      success.style.display = 'flex';
+      form.reset();
+    } else {
+      throw new Error();
+    }
+  } catch {
+    // Fallback: open email client
+    const name    = form.querySelector('[name="name"]').value;
+    const email   = form.querySelector('[name="email"]').value;
+    const message = form.querySelector('[name="message"]').value;
+    const sub  = encodeURIComponent('Portfolio Contact from ' + name);
+    const body = encodeURIComponent('Name: ' + name + '\nEmail: ' + email + '\n\nMessage:\n' + message);
+    window.location.href = 'mailto:jatinvohra792@gmail.com?subject=' + sub + '&body=' + body;
+    btn.textContent = '✓ Opening Email...';
+    setTimeout(() => { btn.textContent = 'Send Message ✦'; btn.disabled = false; }, 2500);
+  }
 };
 
 
@@ -456,17 +573,11 @@ const BLOGS = [
     readTime: '5 min read',
     content: `
       <p>When I first started building EDUQX — my RAG-based AI assistant for NCERT content — I had no idea how complex retrieval-augmented generation would get. Here's everything I learned the hard way.</p>
-
       <h2>What Even Is RAG?</h2>
       <p>RAG (Retrieval-Augmented Generation) is a technique where instead of relying solely on an LLM's training data, you fetch relevant documents from an external knowledge base and inject them into the prompt as context. The result? Accurate, grounded answers — no hallucinations.</p>
-
-      <div class="article-callout">
-        💡 Think of it like an open-book exam vs. a closed-book one. RAG gives the model the "book" at query time.
-      </div>
-
+      <div class="article-callout">💡 Think of it like an open-book exam vs. a closed-book one. RAG gives the model the "book" at query time.</div>
       <h2>Step 1 — Ingesting PDFs</h2>
       <p>The first challenge was extracting clean text from NCERT PDFs. Raw PDF extraction is messy — headers, footers, and page numbers all sneak in. I used <code>pdfplumber</code> and wrote custom logic to strip noise.</p>
-
       <h2>Step 2 — Chunking Strategy</h2>
       <p>This is where most tutorials gloss over the hardest part. Chunk too small and you lose context. Chunk too large and retrieval quality drops. After testing, I settled on:</p>
       <ul>
@@ -474,7 +585,6 @@ const BLOGS = [
         <li>Semantic chunking — split at paragraph boundaries, not arbitrary character counts</li>
         <li>Metadata tagging each chunk with chapter and subject</li>
       </ul>
-
       <h2>Step 3 — Embedding & FAISS Indexing</h2>
       <p>I used <code>sentence-transformers</code> with the <code>all-MiniLM-L6-v2</code> model to generate embeddings. FAISS IndexFlatL2 gave me fast similarity search even on 10,000+ chunks.</p>
       <pre><code>from sentence_transformers import SentenceTransformer
@@ -484,16 +594,6 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 embeddings = model.encode(chunks)
 index = faiss.IndexFlatL2(384)
 index.add(np.array(embeddings))</code></pre>
-
-      <h2>Step 4 — The Guardrail Problem</h2>
-      <p>Without guardrails, the local Phi-3 model would sometimes ignore retrieved context and answer from its own training data — exactly the hallucination I was trying to prevent. The fix was a strict prompt template:</p>
-      <pre><code>Answer ONLY using the context below.
-If the answer is not in the context, say:
-"I don't have information about that in the provided material."
-
-Context: {retrieved_chunks}
-Question: {user_query}</code></pre>
-
       <h2>Key Takeaways</h2>
       <ul>
         <li>Chunking strategy matters more than your embedding model choice</li>
@@ -501,7 +601,6 @@ Question: {user_query}</code></pre>
         <li>Prompt engineering is 50% of a good RAG system</li>
         <li>Local LLMs (Ollama + Phi-3) are surprisingly capable for domain-specific RAG</li>
       </ul>
-
       <hr class="article-divider"/>
       <p>Building EDUQX taught me that RAG is less about ML and more about data engineering and prompt design. If you're starting out — nail the chunking first, everything else follows.</p>
     `
@@ -513,26 +612,9 @@ Question: {user_query}</code></pre>
     readTime: '4 min read',
     content: `
       <p>Being a CS student at LPU while simultaneously building real-world AI projects isn't easy. Here's my honest breakdown of how I made it work — and what I'd do differently.</p>
-
       <h2>The Mindset Shift: Projects Over Grades</h2>
       <p>I'm not saying grades don't matter — they do. But the projects on your CV are what get you the interview. A 7.5 CGPA with 3 strong AI projects beats a 9.0 with zero projects, every single time in tech interviews.</p>
-
-      <div class="article-callout">
-        🎯 Every project I built was chosen with one question in mind: "Does this make me more hireable in AI/ML?"
-      </div>
-
-      <h2>Project 1: Event Reminder System</h2>
-      <p>My first real web app. I built it to learn Flask end-to-end — authentication, database ops, session management, frontend integration. Took 3 weeks of evenings. The goal wasn't innovation, it was fundamentals.</p>
-
-      <h2>Project 2: Startup Advisor Chatbot</h2>
-      <p>After learning Flask, I wanted to work with an LLM API. Gemini API was free and powerful. I added voice input, dark mode, and chat history — not because they were technically impressive, but because they made the project look polished to recruiters.</p>
-
-      <h3>The "Polish Rule"</h3>
-      <p>Spend 20% extra time on UI and README. A project that looks finished gets 10x more attention than a technically deeper project that looks messy.</p>
-
-      <h2>Project 3: RAG-Based AI (EDUQX)</h2>
-      <p>My most ambitious project. This one took 6 weeks and taught me more about AI pipelines than any course ever could. FAISS, embeddings, Ollama, prompt engineering — I learned it all by breaking things.</p>
-
+      <div class="article-callout">🎯 Every project I built was chosen with one question in mind: "Does this make me more hireable in AI/ML?"</div>
       <h2>Time Management: My System</h2>
       <ul>
         <li><strong>Weekday evenings (8–11 PM):</strong> 2–3 hours of focused project work</li>
@@ -540,10 +622,6 @@ Question: {user_query}</code></pre>
         <li><strong>Sunday:</strong> Reviewing progress, planning next week</li>
         <li>No social media during work blocks — phone in another room</li>
       </ul>
-
-      <h2>How to Pick Your Next Project</h2>
-      <p>Use this filter: Does this project let me learn a new technology AND produce something I can demo in 60 seconds? If yes — build it. If it's purely academic with no visible output — skip it.</p>
-
       <hr class="article-divider"/>
       <p>Three projects in one year while attending college is absolutely doable. The key is consistency over intensity — 2 focused hours every night beats a 12-hour weekend session every time.</p>
     `
@@ -555,68 +633,22 @@ Question: {user_query}</code></pre>
     readTime: '6 min read',
     content: `
       <p>I've built production apps with both Flask and FastAPI. After using both in real projects — not just tutorials — here's my unfiltered comparison.</p>
-
       <h2>The Quick Answer</h2>
-      <div class="article-callout">
-        Use <strong>Flask</strong> if you're building a small web app with templates and forms.<br/>
-        Use <strong>FastAPI</strong> if you're building an API that needs to be fast, well-documented, and type-safe.
-      </div>
-
+      <div class="article-callout">Use <strong>Flask</strong> if you're building a small web app with templates and forms.<br/>Use <strong>FastAPI</strong> if you're building an API that needs to be fast, well-documented, and type-safe.</div>
       <h2>Flask: Where It Shines</h2>
-      <p>Flask is where I started. It's minimal, flexible, and has been around forever — meaning Stack Overflow has answers for literally everything.</p>
       <ul>
         <li>Zero configuration to get started</li>
         <li>Jinja2 templating built-in — great for server-rendered UIs</li>
-        <li>Massive ecosystem of extensions (Flask-Login, Flask-SQLAlchemy, etc.)</li>
+        <li>Massive ecosystem of extensions</li>
         <li>Gentle learning curve — perfect for beginners</li>
       </ul>
-
-      <pre><code>from flask import Flask, jsonify
-app = Flask(__name__)
-
-@app.route('/api/hello')
-def hello():
-    return jsonify({'message': 'Hello from Flask'})</code></pre>
-
       <h2>FastAPI: Where It Shines</h2>
-      <p>FastAPI is built on Starlette and Pydantic. It's modern, async-first, and generates OpenAPI docs automatically. For AI backends serving ML models, it's a game changer.</p>
       <ul>
         <li>Automatic API documentation (Swagger UI at <code>/docs</code>)</li>
         <li>Type hints enforced via Pydantic — fewer bugs</li>
-        <li>Async support out of the box — handles concurrent requests better</li>
+        <li>Async support out of the box</li>
         <li>Much faster than Flask for I/O heavy tasks</li>
       </ul>
-
-      <pre><code>from fastapi import FastAPI
-from pydantic import BaseModel
-
-app = FastAPI()
-
-class Query(BaseModel):
-    text: str
-
-@app.post('/api/query')
-async def query(q: Query):
-    return {'response': process(q.text)}</code></pre>
-
-      <h2>The Gotchas Nobody Tells You</h2>
-      <h3>Flask Gotcha: Scaling pain</h3>
-      <p>Flask's built-in server is single-threaded. For production, you MUST use Gunicorn or uWSGI. I learned this the hard way when my chatbot app crashed under load.</p>
-
-      <h3>FastAPI Gotcha: Async confusion</h3>
-      <p>FastAPI is async, but if you call a blocking function inside an async route without <code>run_in_executor</code>, you'll block the entire event loop. This is a subtle bug that's very hard to diagnose.</p>
-
-      <h3>Both Gotchas: CORS</h3>
-      <p>Both frameworks need explicit CORS configuration when your frontend is on a different domain. Forget this once and you'll spend 2 hours debugging a 3-line fix.</p>
-
-      <h2>My Recommendation</h2>
-      <ul>
-        <li><strong>Student/beginner project:</strong> Flask — less overhead, learn the web fundamentals</li>
-        <li><strong>AI/ML API backend:</strong> FastAPI — async, typed, auto-documented</li>
-        <li><strong>Full website with UI:</strong> Flask — Jinja2 templates are still great</li>
-        <li><strong>Microservices/production API:</strong> FastAPI — performance matters here</li>
-      </ul>
-
       <hr class="article-divider"/>
       <p>Both are excellent frameworks. I still use Flask for quick projects and FastAPI for anything that needs to scale. Learn Flask first — then FastAPI will make much more sense.</p>
     `
@@ -640,10 +672,7 @@ window.openBlog = function(index) {
     <div class="article-body">${blog.content}</div>
   `;
 
-  // Reset scroll
   modal.scrollTop = 0;
-
-  // Trigger open animation
   requestAnimationFrame(() => {
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -656,7 +685,6 @@ window.closeBlog = function() {
   document.body.style.overflow = '';
 };
 
-// Close on Escape
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') window.closeBlog();
 });

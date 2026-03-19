@@ -27,7 +27,7 @@
   <!-- Canvas particles -->
   <canvas id="canvas-bg"></canvas>
 
-  <!-- Background blobs — creates the large soft gradient look from screenshot -->
+  <!-- Background blobs -->
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
   <div class="blob blob-3"></div>
@@ -35,7 +35,6 @@
   <!-- ===== NAVBAR ===== -->
   <nav id="navbar">
     <a href="#hero" class="nav-logo">JV</a>
-
     <ul class="nav-links" id="nav-links">
       <li><a href="#about">About</a></li>
       <li><a href="#skills">Skills</a></li>
@@ -44,9 +43,7 @@
       <li><a href="#education">Education</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
-
     <div class="nav-right">
-      <!-- Theme toggle — circular button with moon/sun icon -->
       <button class="theme-btn" id="theme-btn" title="Toggle theme">
         <span id="theme-icon">🌙</span>
       </button>
@@ -60,13 +57,8 @@
   <!-- ===== HERO ===== -->
   <section id="hero">
     <div class="hero-inner">
-      <!-- Matches "HELLO, I'M" from screenshot -->
       <p class="hero-hello">Hello, I'm</p>
-
-      <!-- Large gradient name — exact match -->
       <h1 class="hero-name">Jatin Vohra</h1>
-
-      <!-- Role line — matches "AI Developer · Java Developer · Full Stack Enthusiast" -->
       <p class="hero-role">
         AI Developer
         <span class="role-sep">·</span>
@@ -74,13 +66,10 @@
         <span class="role-sep">·</span>
         Full Stack Enthusiast
       </p>
-
       <p class="hero-desc">
         Computer Science student passionate about building AI-powered systems,
         intelligent chatbots, and modern web applications.
       </p>
-
-      <!-- Three buttons like screenshot: View Projects, Contact Me, Resume -->
       <div class="hero-btns">
         <a href="#projects" class="btn-primary">View Projects ↓</a>
         <a href="#contact" class="btn-ghost">✉ Contact Me</a>
@@ -97,38 +86,35 @@
   <section id="about" class="section-alt">
     <div class="container">
       <div class="about-grid">
-        <!-- Left: bio text with Lovable-style heading -->
-        <div class="reveal">
+        <div class="about-left reveal">
           <h2 class="title-split">About <span class="col">Me</span></h2>
           <div class="title-underline"></div>
           <div class="about-bio">
-            <p>I'm a Computer Science Engineering student at <strong>Lovely Professional University</strong> with a deep passion for AI systems, backend development, and building intelligent applications that solve real-world problems.</p>
-            <p>My journey in tech is driven by curiosity — from crafting AI-powered chatbots to developing full-stack web applications. I thrive on turning complex ideas into clean, functional solutions.</p>
-            <p>When I'm not coding, I volunteer with social welfare initiatives.</p>
+            <p>I'm a passionate Computer Science student in my <strong>6th semester</strong> at Lovely Professional University, with a strong interest in <strong>software development</strong> and real-world problem-solving.</p>
+            <p>I've built practical applications across chatbot development, web-based systems, and AI-powered tools — always focused on user-centric, functional solutions. I'm currently deepening my skills in <strong>Data Structures & Algorithms</strong> and <strong>Data Science</strong> to prepare for placement opportunities.</p>
+            <p>My goal is to become a skilled software engineer who contributes to impactful, innovative solutions. I'm always eager to learn new technologies and take on meaningful challenges.</p>
           </div>
         </div>
-
-        <!-- Right: 4 feature cards exactly like screenshot -->
         <div class="about-cards-grid reveal">
           <div class="about-feature-card">
-            <span class="afc-icon">🧠</span>
-            <p class="afc-title">AI & ML</p>
-            <p class="afc-sub">Building intelligent systems</p>
+            <span class="afc-icon">🤖</span>
+            <p class="afc-title">AI Developer</p>
+            <p class="afc-sub">RAG, LLMs & Chatbots</p>
           </div>
           <div class="about-feature-card">
-            <span class="afc-icon">⚡</span>
-            <p class="afc-title">Full Stack</p>
-            <p class="afc-sub">End-to-end development</p>
+            <span class="afc-icon">📊</span>
+            <p class="afc-title">Data Science</p>
+            <p class="afc-sub">ML, Pandas & EDA</p>
+          </div>
+          <div class="about-feature-card">
+            <span class="afc-icon">⚙️</span>
+            <p class="afc-title">DSA & Java</p>
+            <p class="afc-sub">Problem solving & logic</p>
           </div>
           <div class="about-feature-card">
             <span class="afc-icon">🚀</span>
-            <p class="afc-title">Problem Solver</p>
-            <p class="afc-sub">Analytical thinker</p>
-          </div>
-          <div class="about-feature-card">
-            <span class="afc-icon">💡</span>
-            <p class="afc-title">Quick Learner</p>
-            <p class="afc-sub">Adaptable & curious</p>
+            <p class="afc-title">App Builder</p>
+            <p class="afc-sub">Web & Android dev</p>
           </div>
         </div>
       </div>
@@ -202,7 +188,6 @@
         <p class="section-desc">Selected projects showcasing my problem-solving approach and technical depth.</p>
       </div>
       <div class="projects-grid">
-
         <div class="project-card reveal">
           <p class="project-num">PROJECT 01</p>
           <div class="project-arrow">↗</div>
@@ -219,7 +204,6 @@
           </ul>
           <div class="project-links"><a href="#" class="project-link">GitHub ↗</a></div>
         </div>
-
         <div class="project-card reveal">
           <p class="project-num">PROJECT 02</p>
           <div class="project-arrow">↗</div>
@@ -236,7 +220,6 @@
           </ul>
           <div class="project-links"><a href="#" class="project-link">GitHub ↗</a></div>
         </div>
-
         <div class="project-card reveal">
           <p class="project-num">PROJECT 03</p>
           <div class="project-arrow">↗</div>
@@ -253,7 +236,6 @@
           </ul>
           <div class="project-links"><a href="#" class="project-link">GitHub ↗</a></div>
         </div>
-
       </div>
     </div>
   </section>
@@ -363,6 +345,7 @@
           </div>
           <div class="edu-score-wrap">
             <span class="edu-score">In Progress</span>
+            <span class="edu-cgpa">CGPA: 6.8</span>
             <span class="edu-year">2023–2027</span>
           </div>
         </div>
@@ -417,17 +400,13 @@
   </section>
 
   <!-- ===== FLOATING CHATBOT ===== -->
-  <!-- Floating toggle button -->
   <button class="chat-fab" id="chat-fab" title="Chat with Jatin's AI">
     <span class="fab-icon-open">💬</span>
     <span class="fab-icon-close">✕</span>
     <span class="fab-badge">1</span>
   </button>
-
-  <!-- Popup chat window -->
   <div class="chat-popup" id="chat-popup">
     <div class="chat-popup-inner">
-      <!-- Header -->
       <div class="chat-popup-head">
         <div class="chat-popup-avatar">JV</div>
         <div class="chat-popup-info">
@@ -436,17 +415,14 @@
         </div>
         <button class="chat-popup-close" id="chat-popup-close" title="Close">✕</button>
       </div>
-      <!-- Messages -->
       <div class="chat-messages" id="chat-messages">
         <div class="bubble bot">👋 Hi! I'm Jatin's AI assistant. Ask me anything about his skills, projects, or experience!</div>
       </div>
-      <!-- Suggestions -->
       <div class="chat-suggestions" id="chat-suggestions">
         <button class="suggest-btn" onclick="sendSuggest(this)">Who is Jatin?</button>
         <button class="suggest-btn" onclick="sendSuggest(this)">Projects built?</button>
         <button class="suggest-btn" onclick="sendSuggest(this)">Available to hire?</button>
       </div>
-      <!-- Input -->
       <div class="chat-input-row">
         <input type="text" id="chat-input" class="chat-input" placeholder="Ask something..." onkeydown="if(event.key==='Enter') sendChat()" />
         <button class="chat-send" onclick="sendChat()">→</button>
@@ -464,7 +440,6 @@
         <p class="section-desc">Articles on AI, backend dev, and student life in tech.</p>
       </div>
       <div class="blog-grid">
-
         <div class="blog-card reveal" onclick="openBlog(0)">
           <div class="blog-card-top">
             <p class="blog-tag">AI / LLMs</p>
@@ -477,7 +452,6 @@
             <span class="blog-read-btn">Read Article →</span>
           </div>
         </div>
-
         <div class="blog-card reveal" onclick="openBlog(1)">
           <div class="blog-card-top">
             <p class="blog-tag">Career</p>
@@ -490,7 +464,6 @@
             <span class="blog-read-btn">Read Article →</span>
           </div>
         </div>
-
         <div class="blog-card reveal" onclick="openBlog(2)">
           <div class="blog-card-top">
             <p class="blog-tag">Python</p>
@@ -503,7 +476,6 @@
             <span class="blog-read-btn">Read Article →</span>
           </div>
         </div>
-
       </div>
     </div>
   </section>
@@ -538,25 +510,28 @@
             <a href="https://github.com/jatinvohra11" target="_blank" class="contact-link">
               <span class="cl-icon">⌥</span><span>github.com/jatinvohra11</span>
             </a>
-
           </div>
         </div>
         <div class="contact-form-wrap reveal">
-          <form onsubmit="submitForm(event)">
+          <form id="contact-form" onsubmit="submitForm(event)">
             <div class="form-group">
               <label class="form-label">NAME</label>
-              <input type="text" class="form-input" placeholder="Your name" required />
+              <input type="text" name="name" class="form-input" placeholder="Your name" required />
             </div>
             <div class="form-group">
               <label class="form-label">EMAIL</label>
-              <input type="email" class="form-input" placeholder="your@email.com" required />
+              <input type="email" name="email" class="form-input" placeholder="your@email.com" required />
             </div>
             <div class="form-group">
               <label class="form-label">MESSAGE</label>
-              <textarea class="form-input form-textarea" placeholder="Tell me about your project or opportunity..." required></textarea>
+              <textarea name="message" class="form-input form-textarea" placeholder="Tell me about your project or opportunity..." required></textarea>
             </div>
             <button type="submit" class="form-submit" id="form-submit">Send Message ✦</button>
           </form>
+          <div class="form-success" id="form-success" style="display:none">
+            <div class="form-success-icon">✓</div>
+            <p>Message sent! I'll get back to you soon.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -572,17 +547,21 @@
     <p class="footer-copy">© 2025 <span>Jatin Vohra</span> · Built with passion & caffeine ✦</p>
   </footer>
 
-  <!-- ===== CERT MODAL ===== -->
-  <div class="cert-modal-overlay" id="cert-modal-overlay" onclick="closeCert()">
-    <div class="cert-modal" id="cert-modal" onclick="event.stopPropagation()">
-      <button class="cert-modal-close" onclick="closeCert()">✕</button>
-      <div class="cert-modal-header" id="cert-modal-header"></div>
-      <div class="cert-modal-img-wrap" id="cert-modal-img-wrap">
-        <div class="cert-preview-card" id="cert-preview-card"></div>
+  <!-- ===== CERT INLINE VIEWER ===== -->
+  <div class="cert-inline-overlay" id="cert-inline-overlay">
+    <div class="cert-inline-box" id="cert-inline-box">
+      <div class="cert-inline-head">
+        <div class="cert-inline-info">
+          <span class="cert-inline-tag" id="cert-inline-tag"></span>
+          <h3 class="cert-inline-title" id="cert-inline-title"></h3>
+        </div>
+        <div class="cert-inline-actions">
+          <a class="cert-inline-dl" id="cert-inline-dl" href="#" download>↓ Download</a>
+          <button class="cert-inline-close" onclick="closeCertInline()">✕</button>
+        </div>
       </div>
-      <div class="cert-modal-actions">
-        <a id="cert-download-btn" href="#" download class="cert-action-btn primary">↓ Download Certificate</a>
-        <button class="cert-action-btn ghost" onclick="closeCert()">Close</button>
+      <div class="cert-inline-body" id="cert-inline-body">
+        <div class="cert-inline-loading"><div class="cert-spin"></div><p>Loading...</p></div>
       </div>
     </div>
   </div>
