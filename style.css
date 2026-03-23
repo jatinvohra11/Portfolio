@@ -623,6 +623,7 @@ section { position: relative; z-index: 1; }
 .edu-degree { font-size: 0.8rem; color: var(--text2); }
 .edu-score-wrap { text-align: right; flex-shrink: 0; }
 .edu-score { font-family: 'Syne', sans-serif; font-size: 1.12rem; font-weight: 800; color: var(--purple); display: block; }
+.edu-cgpa { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; color: var(--text3); margin-top: 0.1rem; display: block; }
 .edu-year { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; color: var(--text3); margin-top: 0.1rem; display: block; }
 
 /* ===================== GITHUB ===================== */
